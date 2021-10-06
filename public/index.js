@@ -1,11 +1,17 @@
 //index.js
-$(document).ready(()=>{
+$(document).ready(() => {
+
     const socket = io.connect();
-  
-    //Keep track of the current user
     let currentUser;
-    // Get the online users from the server
     socket.emit('get online users');
+    //Each user should be in the general channel by default.
+    socket.emit('user changed channel', "General");
+  
+    //Users can change the channel by clicking on its name.
+    $(document).on('click', '.channel', (e)=>{
+      let newChannel = e.target.textContent;
+      socket.emit('user changed channel', newChannel);
+    });
   
     $('#create-user-btn').click((e)=>{
       e.preventDefault();
@@ -48,16 +54,6 @@ $(document).ready(()=>{
     socket.on('new user', (username) => {
       console.log(`${username} has joined the chat`);
       $('.users-online').append(`<div class="user-online">${username}</div>`);
-    })
-
-    //Output the new message
-    socket.on('new message', (data) => {
-        $('.message-container').append(`
-        <div class="message">
-            <p class="message-user">${data.sender}: </p>
-            <p class="message-text">${data.message}</p>
-        </div>
-        `);
     })
   
     socket.on('get online users', (onlineUsers) => {

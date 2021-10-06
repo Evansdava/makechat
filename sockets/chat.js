@@ -9,11 +9,6 @@ module.exports = (io, socket, onlineUsers, channels) => {
       console.log(`✋ ${username} has joined the chat! ✋`);
       io.emit("new user", username);
     })
-  
-    socket.on('new message', (data) => {
-      console.log(`🎤 ${data.sender}: ${data.message} 🎤`)
-      io.emit('new message', data);
-    })
 
     socket.on('get online users', () => {
         //Send over the onlineUsers
@@ -48,6 +43,15 @@ module.exports = (io, socket, onlineUsers, channels) => {
         channels[data.channel].push({sender : data.sender, message : data.message});
         //Emit only to sockets that are in that channel room.
         io.to(data.channel).emit('new message', data);
+    });
+
+    //Have the socket join the room of the channel
+    socket.on('user changed channel', (newChannel) => {
+        socket.join(newChannel);
+        socket.emit('user changed channel', {
+            channel : newChannel,
+            messages : channels[newChannel]
+        });
     });
 
 }
